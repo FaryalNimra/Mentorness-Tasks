@@ -751,6 +751,93 @@ INSERT INTO `hotel_reservation_dataset` (`Booking_ID`, `no_of_adults`, `no_of_ch
 (0, 2, 1, 0, 1, 'Meal Plan 1', 'Room_Type 1', 11, '0000-00-00', 'Online', 150, 'Canceled');
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- 1. Total number of reservations
+SELECT COUNT(*) AS total_reservations
+FROM reservations;
+
+-- 2. Most popular meal plan among guests
+SELECT meal_plan, COUNT(*) AS total_reservations
+FROM reservations
+GROUP BY meal_plan
+ORDER BY total_reservations DESC
+LIMIT 1;
+
+-- 3. Average price per room for reservations involving children
+SELECT AVG(price_per_room) AS average_price_with_children
+FROM reservations
+WHERE children > 0;
+
+-- 4. Number of reservations made for the year 20XX
+SELECT COUNT(*) AS total_reservations_in_year
+FROM reservations
+WHERE YEAR(reservation_date) = 20XX;
+
+-- 5. Most commonly booked room type
+SELECT room_type, COUNT(*) AS total_reservations
+FROM reservations
+GROUP BY room_type
+ORDER BY total_reservations DESC
+LIMIT 1;
+
+-- 6. Number of reservations that fall on a weekend
+SELECT COUNT(*) AS weekend_reservations
+FROM reservations
+WHERE no_of_weekend_nights > 0;
+
+-- 7. Highest and lowest lead time for reservations
+SELECT MAX(lead_time) AS highest_lead_time, MIN(lead_time) AS lowest_lead_time
+FROM reservations;
+
+-- 8. Most common market segment type for reservations
+SELECT market_segment, COUNT(*) AS total_reservations
+FROM reservations
+GROUP BY market_segment
+ORDER BY total_reservations DESC
+LIMIT 1;
+
+-- 9. Number of reservations with a booking status of "Confirmed"
+SELECT COUNT(*) AS confirmed_reservations
+FROM reservations
+WHERE booking_status = 'Confirmed';
+
+-- 10. Total number of adults and children across all reservations
+SELECT SUM(adults) AS total_adults, SUM(children) AS total_children
+FROM reservations;
+
+-- 11. Average number of weekend nights for reservations involving children
+SELECT AVG(no_of_weekend_nights) AS average_weekend_nights_with_children
+FROM reservations
+WHERE children > 0;
+
+-- 12. Number of reservations made in each month of the year
+SELECT MONTH(reservation_date) AS month, COUNT(*) AS total_reservations
+FROM reservations
+GROUP BY MONTH(reservation_date);
+
+-- 13. Average number of nights spent by guests for each room type
+SELECT room_type, AVG(no_of_weekend_nights + no_of_weekday_nights) AS average_nights
+FROM reservations
+GROUP BY room_type;
+
+-- 14. Most common room type and average price for that room type for reservations involving children
+WITH common_room_type_with_children AS (
+    SELECT room_type, COUNT(*) AS total_reservations
+    FROM reservations
+    WHERE children > 0
+    GROUP BY room_type
+    ORDER BY total_reservations DESC
+    LIMIT 1
+)
+SELECT crt.room_type, AVG(r.price_per_room) AS average_price
+FROM reservations r
+JOIN common_room_type_with_children crt ON r.room_type = crt.room_type
+WHERE r.children > 0
+GROUP BY crt.room_type;
+
+-- 15. Market segment type that generates the highest average price per room
+SELECT market_segment, AVG(price_per_room) AS average_price
+FROM reservations
+GROUP BY market_segment
+ORDER BY average_price DESC
+LIMIT 1;
